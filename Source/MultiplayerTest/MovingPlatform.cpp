@@ -26,16 +26,22 @@ void AMovingPlatform::Tick(float DeltaSeconds)
 {
 	if (HasAuthority()) //Server side only
 	{
-		float startToEndVectorSize = (cachedGlobalMovementTargetLocation - cachedGlobalStartLocation).Size();
-		float currentVectorSize = (GetActorLocation() - cachedGlobalStartLocation).Size();
-		
-		if (currentVectorSize > startToEndVectorSize)
-		{
-			Swap(cachedGlobalStartLocation, cachedGlobalMovementTargetLocation); //Go back to original position
-		}
-		
-		FVector directionVector = (cachedGlobalMovementTargetLocation - cachedGlobalStartLocation).GetSafeNormal();
-		SetActorLocation(GetActorLocation() + directionVector * DeltaSeconds * m_MovementSpeed);
+		UpdatePosition(DeltaSeconds);
 	} 
+}
+
+//////////////////////////////////////////////////////////////////////
+void AMovingPlatform::UpdatePosition(float DeltaSeconds)
+{
+	float startToEndVectorSize = (cachedGlobalMovementTargetLocation - cachedGlobalStartLocation).Size();
+	float currentVectorSize = (GetActorLocation() - cachedGlobalStartLocation).Size();
+
+	if (currentVectorSize > startToEndVectorSize)
+	{
+		Swap(cachedGlobalStartLocation, cachedGlobalMovementTargetLocation); //Go back to original position
+	}
+
+	FVector directionVector = (cachedGlobalMovementTargetLocation - cachedGlobalStartLocation).GetSafeNormal();
+	SetActorLocation(GetActorLocation() + directionVector * DeltaSeconds * m_MovementSpeed);
 }
 

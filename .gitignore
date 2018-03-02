@@ -77,3 +77,8 @@ Plugins/*/Intermediate/*
 DerivedDataCache/*
 *.uasset
 *.umap
+*.umap
+*.uasset
+*.umap
+*.uasset
+Source/MultiplayerTest/MultiplayerTestCharacter.h

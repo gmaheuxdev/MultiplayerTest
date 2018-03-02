@@ -8,13 +8,6 @@ UCLASS()
 class MULTIPLAYERTEST_API AMovingPlatform : public AStaticMeshActor
 {
 	GENERATED_BODY()
-public:
-
-	AMovingPlatform();
-
-protected:
-	virtual void Tick(float DeltaSeconds) override;
-	virtual void BeginPlay() override;
 	
 private:
 	
@@ -27,4 +20,16 @@ private:
 	//Cached variables
 	FVector cachedGlobalStartLocation;
 	FVector cachedGlobalMovementTargetLocation;
+
+
+public:
+
+	AMovingPlatform();
+
+protected:
+	
+	virtual void Tick(float DeltaSeconds) override;
+	void UpdatePosition(float DeltaSeconds);
+	virtual void BeginPlay() override;
+
 };
