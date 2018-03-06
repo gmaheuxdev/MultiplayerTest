@@ -1,7 +1,7 @@
 #include "PlatformTrigger.h"
 #include "Components/BoxComponent.h"
+#include "MovingPlatform.h"
 
-// Sets default values
 APlatformTrigger::APlatformTrigger()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -30,12 +30,29 @@ void APlatformTrigger::Tick(float DeltaTime)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void APlatformTrigger::OnOverlapBegin(UPrimitiveComponent * OverlappedComp, AActor * OtherActor, UPrimitiveComponent * OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
 {
-	UE_LOG(LogTemp, Warning, TEXT("OMG OMG SO OVERLLAPED"));
+	for (int i = 0; i < m_LinkedPlatformsArray.Num(); i++)
+	{
+		if (m_LinkedPlatformsArray[i] != nullptr)
+		{
+			m_LinkedPlatformsArray[i]->AddActivatedTrigger();
+			m_LinkedPlatformsArray[i]->ValidateActivationConditions();
+		}
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 void APlatformTrigger::OnOverlapEnd(UPrimitiveComponent * OverlappedComp, AActor * OtherActor, UPrimitiveComponent * OtherComp, int32 OtherBodyIndex)
 {
-	UE_LOG(LogTemp, Warning, TEXT("OVERLAP FINISHED"));
+	for (int i = 0; i < m_LinkedPlatformsArray.Num(); i++)
+	{
+		if (m_LinkedPlatformsArray[i] != nullptr)
+		{
+			m_LinkedPlatformsArray[i]->RemoveActivatedTrigger();
+			m_LinkedPlatformsArray[i]->ValidateActivationConditions();
+		}
+	}
+	//UE_LOG(LogTemp, Warning, TEXT("OVERLAP FINISHED"));
 }
+
+
 
