@@ -9,7 +9,7 @@ class MULTIPLAYERTEST_API APlatformTrigger : public AActor
 {
 	GENERATED_BODY()
 
-	//Member variables
+//Member variables
 private:	
 	
 	UPROPERTY(VisibleAnywhere)
@@ -18,7 +18,7 @@ private:
 	UPROPERTY(EditAnywhere)
 	TArray<class AMovingPlatform*> m_LinkedPlatformsArray;
 	
-	//Member Methods
+//Member Methods
 public:	
 
 	APlatformTrigger();

@@ -7,21 +7,6 @@ AMovingPlatform::AMovingPlatform()
 	m_IsActivated = false;
 }
 
-////////////////////////////////////////////////////////////////////////
-void AMovingPlatform::AddActivatedTrigger()
-{
-	m_AmountTriggersActivated++;
-}
-
-/////////////////////////////////////////////////////////////////////////
-void AMovingPlatform::RemoveActivatedTrigger()
-{
-	if (m_AmountTriggersActivated > 0)
-	{
-		m_AmountTriggersActivated--;
-	}
-}
-
 ///////////////////////////////////////////////////////////////////////
 void AMovingPlatform::BeginPlay()
 {
@@ -33,7 +18,7 @@ void AMovingPlatform::BeginPlay()
 		SetReplicateMovement(true);
 	}
 
-	//Cached
+	//Set cached variables
 	m_CachedGlobalStartLocation = GetActorLocation();
 	m_CachedGlobalMovementTargetLocation = GetTransform().TransformPosition(m_MovementTargetLocation);
 }
@@ -50,6 +35,8 @@ void AMovingPlatform::Tick(float DeltaSeconds)
 //////////////////////////////////////////////////////////////////////
 void AMovingPlatform::UpdatePosition(float DeltaSeconds)
 {
+	//Go to target location, then go back to start location in an infinite cycle
+
 	float startToEndVectorSize = (m_CachedGlobalMovementTargetLocation - m_CachedGlobalStartLocation).Size();
 	float currentVectorSize = (GetActorLocation() - m_CachedGlobalStartLocation).Size();
 
@@ -60,6 +47,21 @@ void AMovingPlatform::UpdatePosition(float DeltaSeconds)
 
 	FVector directionVector = (m_CachedGlobalMovementTargetLocation - m_CachedGlobalStartLocation).GetSafeNormal();
 	SetActorLocation(GetActorLocation() + directionVector * DeltaSeconds * m_MovementSpeed);
+}
+
+////////////////////////////////////////////////////////////////////////
+void AMovingPlatform::AddActivatedTrigger()
+{
+	m_AmountTriggersActivated++;
+}
+
+/////////////////////////////////////////////////////////////////////////
+void AMovingPlatform::RemoveActivatedTrigger()
+{
+	if (m_AmountTriggersActivated > 0)
+	{
+		m_AmountTriggersActivated--;
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////

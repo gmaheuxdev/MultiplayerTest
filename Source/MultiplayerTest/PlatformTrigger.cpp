@@ -17,6 +17,8 @@ APlatformTrigger::APlatformTrigger()
 void APlatformTrigger::BeginPlay()
 {
 	Super::BeginPlay();
+
+	//Subscribe overlap callbacks
 	m_PlatformTriggerVolume->OnComponentBeginOverlap.AddDynamic(this, &APlatformTrigger::OnOverlapBegin);
 	m_PlatformTriggerVolume->OnComponentEndOverlap.AddDynamic(this, &APlatformTrigger::OnOverlapEnd);
 }
@@ -51,7 +53,6 @@ void APlatformTrigger::OnOverlapEnd(UPrimitiveComponent * OverlappedComp, AActor
 			m_LinkedPlatformsArray[i]->ValidateActivationConditions();
 		}
 	}
-	//UE_LOG(LogTemp, Warning, TEXT("OVERLAP FINISHED"));
 }
 
 
