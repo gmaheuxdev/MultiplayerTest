@@ -17,8 +17,8 @@ public:
 
 	//Interface methods to be implemented
 	virtual void Host() = 0; 
-	virtual void JoinServer(const FString& instanceAdress) = 0;
+	virtual void JoinServer(uint32 serverIndexToJoin) = 0;
 	virtual void LoadMainMenu() = 0;
 	virtual void QuitGame() = 0;
-		
+	virtual void RefreshServerList() = 0;
 };

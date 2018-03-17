@@ -12,6 +12,13 @@ class MULTIPLAYERTEST_API UMainMenuWidget : public UMenuWidget
 {
 	GENERATED_BODY()
 
+
+//Getters and setters
+public:
+
+int32 GetSelectedServerIndex(); //pas sur de si c'est vraiment clair comme maniere
+void SetSelectedServerIndex(int32 newIndex);
+
 private:
 //Member variables
 
@@ -26,6 +33,8 @@ private:
 	class UButton* m_JoinServerMenuButton;
 	UPROPERTY(meta = (BindWidget))
 	class UButton* m_QuitGameMenuButton;
+	UPROPERTY(meta = (BindWidget))
+	class UScrollBox* m_ServerListScrollBox;
 	
 	
 	UPROPERTY(meta = (BindWidget))
@@ -34,12 +43,14 @@ private:
 	class UWidget* m_JoinMenuWidget;
 	UPROPERTY(meta = (BindWidget))
 	class UWidget* m_MainMenuWidget;
-	UPROPERTY(meta = (BindWidget))
-	class UEditableTextBox* m_IPAdressTextBox;
 
+	TSubclassOf<UUserWidget> m_ServerRowClassRef;
+
+	int32 m_SelectedServerIndex; //Ouain?? en member variable??
 
 protected:
-		
+	
+	UMainMenuWidget();
 	virtual bool Initialize() override;
 	void SetupMenuCallbacks();
 
@@ -54,4 +65,8 @@ protected:
 	void JoinServerClickCallback();
 	UFUNCTION()
 	void QuitGameButtonCallback();
+
+public:
+	UFUNCTION(BlueprintCallable)
+	void PopulateServerList(TArray<FString> foundServersList);
 };
