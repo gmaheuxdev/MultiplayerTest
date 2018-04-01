@@ -12,7 +12,6 @@ class MULTIPLAYERTEST_API UMenuWidget : public UUserWidget
 	GENERATED_BODY()
 	
 //Getters and setters
-
 public:
 	void SetMainMenuInterface(IMainMenuInterface* newMainMenuInterface);
 
@@ -24,7 +23,7 @@ protected:
 
 //Member methods
 public:
-	void SetupMenu();
+	void DisplayMenu();
 	void ExitMenu();
 
 protected:

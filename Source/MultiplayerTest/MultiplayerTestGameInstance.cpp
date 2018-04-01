@@ -10,9 +10,10 @@
 #include "OnlineSessionSettings.h"
 
 
-//Macro for sessionName
+//Preprocessor directives
 const static FName SESSION_NAME = TEXT("TestSession");
-
+const static int MAX_SEARCH_RESULTS = 200000;
+const static FName SERVER_NAME_SETTINGS_KEY = TEXT("ServerNameSettingsKey");
 
 UMultiplayerTestGameInstance::UMultiplayerTestGameInstance(const FObjectInitializer & ObjectInitializer)
 {
@@ -27,11 +28,17 @@ UMultiplayerTestGameInstance::UMultiplayerTestGameInstance(const FObjectInitiali
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void UMultiplayerTestGameInstance::Init()
 {
+	SetupOnlineSubsystem();
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void UMultiplayerTestGameInstance::SetupOnlineSubsystem()
+{
 	m_OnlineSubSystemInterface = IOnlineSubsystem::Get();
 	if (m_OnlineSubSystemInterface != nullptr)
 	{
 		m_OnlineSessionInterface = m_OnlineSubSystemInterface->GetSessionInterface();
-		
+
 		if (m_OnlineSessionInterface.IsValid())
 		{
 			m_OnlineSessionInterface->OnDestroySessionCompleteDelegates.AddUObject(this, &UMultiplayerTestGameInstance::OnSessionDestructionCompleteCallback);
@@ -45,14 +52,17 @@ void UMultiplayerTestGameInstance::Init()
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 void UMultiplayerTestGameInstance::RefreshServerList()
 {
-	m_SessionSearch = MakeShareable(new FOnlineSessionSearch());//CHECK CA!!!!!
+	m_SessionSearch = MakeShareable(new FOnlineSessionSearch()); //needs to stay alive for asynchronous call
 
+	//Setup session search and launch it
 	if (m_SessionSearch.IsValid())
 	{
-		m_SessionSearch->bIsLanQuery = true;
+		m_SessionSearch->bIsLanQuery = false;
+		m_SessionSearch->MaxSearchResults = MAX_SEARCH_RESULTS;
+		m_SessionSearch->QuerySettings.Set(SEARCH_PRESENCE, true, EOnlineComparisonOp::Equals);
 
-		m_OnlineSessionInterface->FindSessions(0, m_SessionSearch.ToSharedRef());///////CHECK CA
 		UE_LOG(LogTemp, Warning, TEXT("Now looking for a session"));
+		m_OnlineSessionInterface->FindSessions(0, m_SessionSearch.ToSharedRef());
 	}
 }
 
@@ -65,8 +75,8 @@ void UMultiplayerTestGameInstance::LoadMenuWidget()
 		
 		if(m_MainMenuWidget != nullptr)
 		{
-			m_MainMenuWidget->SetMainMenuInterface(this); //Tell menu I am "implementing" the "interface"
-			m_MainMenuWidget->SetupMenu();
+			m_MainMenuWidget->SetMainMenuInterface(this); //Tells menu I am "implementing" the "interface"
+			m_MainMenuWidget->DisplayMenu();
 		}
 	}
 }
@@ -77,18 +87,21 @@ void UMultiplayerTestGameInstance::LoadPauseMenu()
 	if (m_PauseMenuClassRef != nullptr)
 	{
 		UPauseMenuWidget* pauseMenuWidget = CreateWidget<UPauseMenuWidget>(this, m_PauseMenuClassRef);
-		pauseMenuWidget->SetupMenu();
+		pauseMenuWidget->DisplayMenu();
 	}
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void UMultiplayerTestGameInstance::CreateSession()
 {
+	//Setup session and launch creation
 	FOnlineSessionSettings currentSessionSettings;
-	currentSessionSettings.bIsLANMatch = true;
+	currentSessionSettings.bIsLANMatch = false;
 	currentSessionSettings.NumPublicConnections = 2;
 	currentSessionSettings.bShouldAdvertise = true;
-
+	currentSessionSettings.bUsesPresence = true; //needed to create an internet session
+	currentSessionSettings.Set(SERVER_NAME_SETTINGS_KEY,m_ServerName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
+	
 	m_OnlineSessionInterface->CreateSession(0, SESSION_NAME, currentSessionSettings);
 }
 
@@ -103,20 +116,20 @@ void UMultiplayerTestGameInstance::QuitGame()
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void UMultiplayerTestGameInstance::Host()
+void UMultiplayerTestGameInstance::Host(FString serverName)
 {
 	if (m_OnlineSessionInterface.IsValid())
 	{
-		//Destroy here and create new session in callback
+		//Destroy here if exists and create new session in callback
 		if (m_OnlineSessionInterface->GetNamedSession(SESSION_NAME) != nullptr)
 		{
 			m_OnlineSessionInterface->DestroySession(SESSION_NAME);
 		}
 		else
 		{
+			m_ServerName = serverName;
 			CreateSession();
 		}
-		//UE_LOG(LogTemp, Warning, TEXT("Found session interface")); 
 	}
 }
 
@@ -126,11 +139,7 @@ void UMultiplayerTestGameInstance::JoinServer(uint32 serverIndexToJoin)
 	if (m_OnlineSessionInterface.IsValid() && m_SessionSearch.IsValid())
 	{
 		m_OnlineSessionInterface->JoinSession(0, SESSION_NAME, m_SessionSearch->SearchResults[serverIndexToJoin]);
-
 	}
-	
-
-	//APlayerController* currentPlayerController = GetFirstLocalPlayerController();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -151,7 +160,7 @@ void UMultiplayerTestGameInstance::OnSessionCreationCompleteCallback(FName curre
 
 	if (currentWorld != nullptr && isSucces)
 	{
-		currentWorld->ServerTravel("/Game/ThirdPersonCPP/Maps/ThirdPersonExampleMap?listen");
+		currentWorld->ServerTravel("/Game/ThirdPersonCPP/Maps/Lobby?listen");
 	}
 }
 
@@ -169,17 +178,36 @@ void UMultiplayerTestGameInstance::OnFindSessionsCompleteCallback(bool isSucces)
 {
 	if (isSucces && m_SessionSearch.IsValid())
 	{
-		TArray<FString> foundServerNamesArray;
+		TArray<FServerFoundData> foundServerDataArray;
 		for (const FOnlineSessionSearchResult& result : m_SessionSearch->SearchResults)
 		{
 			if (result.IsValid())
 			{
-				foundServerNamesArray.Add(result.GetSessionIdStr());
+				SetupFoundSessionData(result, foundServerDataArray);
 			}
 		}
 
-		m_MainMenuWidget->PopulateServerList(foundServerNamesArray);
-	} 
+		m_MainMenuWidget->PopulateServerList(foundServerDataArray);
+	}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void UMultiplayerTestGameInstance::SetupFoundSessionData(const FOnlineSessionSearchResult &result, TArray<FServerFoundData> &foundServerDataArray)
+{
+	//Setup server found data and add it to an array of data for all found servers
+	FServerFoundData currentSessionData;
+	currentSessionData.MaxPlayers = result.Session.SessionSettings.NumPublicConnections;
+	currentSessionData.HostUserName = result.Session.OwningUserName;
+	currentSessionData.AmountPlayersConnected = currentSessionData.MaxPlayers - result.Session.NumOpenPublicConnections;
+
+	FString serverName;
+
+	if (result.Session.SessionSettings.Get(SERVER_NAME_SETTINGS_KEY, serverName))
+	{
+		currentSessionData.ServerName = serverName;
+	}
+
+	foundServerDataArray.Add(currentSessionData);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

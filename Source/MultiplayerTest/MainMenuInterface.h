@@ -15,8 +15,8 @@ class MULTIPLAYERTEST_API IMainMenuInterface
 
 public:
 
-	//Interface methods to be implemented
-	virtual void Host() = 0; 
+	//All the interface methods need to be implemented
+	virtual void Host(FString serverName) = 0; 
 	virtual void JoinServer(uint32 serverIndexToJoin) = 0;
 	virtual void LoadMainMenu() = 0;
 	virtual void QuitGame() = 0;

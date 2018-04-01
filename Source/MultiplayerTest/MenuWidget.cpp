@@ -3,7 +3,7 @@
 //Getters and setters
 void UMenuWidget::SetMainMenuInterface(IMainMenuInterface* newMainMenuInterface)
 {
-	m_MainMenuInterface = newMainMenuInterface; //Menu talks to interface to reduce compile time coupling
+	m_MainMenuInterface = newMainMenuInterface; //Menu talks to interface to remove compile time coupling
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -22,7 +22,7 @@ bool UMenuWidget::Initialize()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
-void UMenuWidget::SetupMenu()
+void UMenuWidget::DisplayMenu()
 {
 	if (m_CachedPlayerController != nullptr)
 	{

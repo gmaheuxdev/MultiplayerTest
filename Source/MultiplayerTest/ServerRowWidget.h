@@ -20,6 +20,10 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* m_ServerNameText;
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* m_playersConnectedAmountText;
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* m_MaximumPlayersAmountText;
 
 private:
 	int32 m_ServerIndex; //index in server list
