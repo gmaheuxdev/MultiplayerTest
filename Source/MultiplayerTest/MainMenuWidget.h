@@ -17,7 +17,7 @@ struct FServerFoundData
 	uint16  MaxPlayers;
 };
 
-
+///////////////////////////////////////////////////////////////////////////
 UCLASS()
 class MULTIPLAYERTEST_API UMainMenuWidget : public UMenuWidget
 {
@@ -34,6 +34,7 @@ void SetSelectedServerIndex(int32 newIndex);
 //Member variables
 private:
 
+	//MENU VISUAL BINDINGS
 	//Warning: Names in interface need to be the same name as variable for binding to work
 	UPROPERTY(meta = (BindWidget))
 	class UButton* m_OpenHostMenuButton;

@@ -9,7 +9,6 @@
 #include "OnlineSubsystem.h"
 #include "OnlineSessionSettings.h"
 
-
 //Preprocessor directives
 const static FName SESSION_NAME = TEXT("TestSession");
 const static int MAX_SEARCH_RESULTS = 200000;
